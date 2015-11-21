@@ -2,6 +2,10 @@
 
 var express = require('express');
 var router = express.Router();
+const gMapsKey = 'AIzaSyCmD5SvAcTk3z9itXbK1sA5PMxmhUYR8Us';  
+const distance = require('google-distance');
+distance.apiKey = gMapsKey; 
+const GoogleMapsApi = require('googlemaps');
 
 const gts = () =>  {
   let rand = Math.floor(Math.random() * 2) + 1;
@@ -45,7 +49,7 @@ const deviceOwner = {
     city: 'Bucharest',
     country: 'Romania'
   },
-  medicalCondition: ['diabetes - insulin', 'sleeping disorder', 'alergic to penicilin'],
+  medicalCondition: ['diabetes - insulin', 'sleeping disorder', 'allergic to penicillin'],
   emergencyContact: {
     name: 'Maria Kent',
     phone: '+40742345678',
@@ -61,7 +65,7 @@ router.get('/devices', function(req, res, next) {
   deviceStatus.semGr3.b = newStatus('gr3', deviceStatus.semGr3.a);
   deviceStatus.semGr4.a = newStatus('gr4');
   deviceStatus.semGr4.b = newStatus('gr4', deviceStatus.semGr4.a);
-  res.send(JSON.stringify(deviceStatus));
+  res.json(JSON.stringify(deviceStatus));
 });
 
 /* activate panic button */
@@ -69,6 +73,11 @@ router.get('/panic', (req, res, next) => {
   // Read the panic details
   const deviceId = req.param('device');
   const coords = req.param('coords');
+  const gMaps = new GoogleMapsApi({
+    key: gMapsKey,
+    stagger_time:       1000, // for elevationPath
+    encode_polylines:   false
+  });
 
   // Find nearest ambulance
   const ambulanceLocation = '44.44589077681009,26.11595373068849'; 
@@ -79,7 +88,29 @@ router.get('/panic', (req, res, next) => {
   // Update traffic lights to prioritize ambulance course
   
   // Call sms api and send text to emergency contact
-  res.send('foo' + deviceId + coords);
+  distance.get({
+    origin: ambulanceLocation,
+    destination: coords
+  }, (err, data) => {
+    if (err) console.log(err);
+
+    const params = {
+      origin: ambulanceLocation,
+      destination: coords
+    };
+    gMaps.directions(params, (err, results) => {
+      if (err) throw err;
+
+      res.send({
+        accidentDetails: {
+          coords: coords,
+          victimDetails: deviceOwner
+        },
+        routeWaypoints: results.routes[0].legs[0].steps,
+        routeDetails: data
+      });
+    });
+  })
 });
 
 

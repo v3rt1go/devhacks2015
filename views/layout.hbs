@@ -4,10 +4,239 @@
     <title>{{title}}</title>
     <link rel='stylesheet' href='/javascripts/bootstrap/dist/css/bootstrap.min.css'>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+
+    <script type="text/javascript">
+      function initMap() {
+        var directionsService = new google.maps.DirectionsService;
+        var directionsDisplay = new google.maps.DirectionsRenderer;
+        var latLong = {
+          lat: 44.44589077681009,
+          lng: 26.11595373068849
+        };
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 13,
+          center: latLong
+        });
+        directionsDisplay.setMap(map);
+
+        /* MARKERS */
+        // Define your locations: HTML content for the info window, latitude, longitude
+        var locations = [
+          ['<h4>semGr1_1</h4>', 44.44634660434772, 26.11520073244162],
+          ['<h4>semGr1_2</h4>', 44.4464078794009, 26.114943240376192],
+          ['<h4>semGr2_1</h4>', 44.44512874933136, 26.11425659486838],
+          ['<h4>semGr2_2</h4>', 44.44494491995363, 26.114063475819307],
+          ['<h4>semGr3_1</h4>', 44.44349724338838, 26.11899874040671],
+          ['<h4>semGr3_2</h4>', 44.44361213966448, 26.119132850857454],
+          ['<h4>semGr4_1</h4>', 44.43781342553688, 26.114181493015963],
+          ['<h4>semGr4_2</h4>', 44.43762957314023, 26.114127848835665]
+        ];
+
+        // Setup the different icons and shadows
+        var iconURLPrefix = 'http://maps.google.com/mapfiles/ms/icons/';
+        var icons = [
+          iconURLPrefix + 'red-dot.png',
+          iconURLPrefix + 'green-dot.png'
+        ]
+        var iconsLength = icons.length;
+        var infowindow = new google.maps.InfoWindow({
+          maxWidth: 160
+        });
+        var markers = new Array();
+        var iconCounter = 0;
+
+        // Add the markers and infowindows to the map
+        for (var i = 0; i < locations.length; i++) {  
+          var marker = new google.maps.Marker({
+          position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+          map: map,
+          icon: icons[iconCounter]
+          });
+
+          markers["semGr"+ (i + 1)] = marker;
+
+          google.maps.event.addListener(marker, 'click', (function(marker, i) {
+          return function() {
+            infowindow.setContent(locations[i][0]);
+            infowindow.open(map, marker);
+          }
+          })(marker, i));
+          
+          iconCounter++;
+          // We only have a limited number of possible icon colors, so we may have to restart the counter
+          if(iconCounter >= iconsLength) {
+          iconCounter = 0;
+          }
+        }
+
+        var onChangeHandler = function() {
+          calculateAndDisplayRoute(directionsService, directionsDisplay, markers);
+        };
+        document.getElementById('simulate').addEventListener('click', onChangeHandler);
+      }
+
+      function calculateAndDisplayRoute(directionsService, directionsDisplay, markers) {
+        var waypts = [];
+        var checkboxArray = document.getElementById('waypoints');
+
+        directionsService.route({
+          origin: document.getElementById('start').value,
+          destination: document.getElementById('end').value,
+          waypoints: waypts,
+          optimizeWaypoints: true,
+          travelMode: google.maps.TravelMode.DRIVING
+        }, function(response, status) {
+          if (status === google.maps.DirectionsStatus.OK) {
+            directionsDisplay.setDirections(response);
+            var route = response.routes[0];
+            var summaryPanel = document.getElementById('directions-panel');
+            summaryPanel.innerHTML = '';
+            // For each route, display summary information.
+            for (var i = 0; i < route.legs.length; i++) {
+              var routeSegment = i + 1;
+              summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment +
+                  '</b><br>';
+              summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
+              summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
+              summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
+            }
+          } else {
+            window.alert('Directions request failed due to ' + status);
+          }
+        });
+
+        getData(markers);
+      }
+
+      function getData(markers) {
+        $.ajax({
+          url: "http://192.168.2.195:3000/api/devices",
+        }).done(function (json) {console.log(json);
+          for (var lightId in json["geocoded_waypoints"]) {
+            console.log(markers[lightId]);
+          }
+        });
+      }
+  
+      function initMap() {
+        var directionsService = new google.maps.DirectionsService;
+        var directionsDisplay = new google.maps.DirectionsRenderer;
+        var latLong = {
+          lat: 44.44589077681009,
+          lng: 26.11595373068849
+        };
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 13,
+          center: latLong
+        });
+        directionsDisplay.setMap(map);
+
+        /* MARKERS */
+        // Define your locations: HTML content for the info window, latitude, longitude
+        var locations = [
+          ['<h4>semGr1_1</h4>', 44.44634660434772, 26.11520073244162],
+          ['<h4>semGr1_2</h4>', 44.4464078794009, 26.114943240376192],
+          ['<h4>semGr2_1</h4>', 44.44512874933136, 26.11425659486838],
+          ['<h4>semGr2_2</h4>', 44.44494491995363, 26.114063475819307],
+          ['<h4>semGr3_1</h4>', 44.44349724338838, 26.11899874040671],
+          ['<h4>semGr3_2</h4>', 44.44361213966448, 26.119132850857454],
+          ['<h4>semGr4_1</h4>', 44.43781342553688, 26.114181493015963],
+          ['<h4>semGr4_2</h4>', 44.43762957314023, 26.114127848835665]
+        ];
+
+        // Setup the different icons and shadows
+        var iconURLPrefix = 'http://maps.google.com/mapfiles/ms/icons/';
+        var icons = [
+          iconURLPrefix + 'red-dot.png',
+          iconURLPrefix + 'green-dot.png'
+        ]
+        var iconsLength = icons.length;
+        var infowindow = new google.maps.InfoWindow({
+          maxWidth: 160
+        });
+        var markers = new Array();
+        var iconCounter = 0;
+
+        // Add the markers and infowindows to the map
+        for (var i = 0; i < locations.length; i++) {  
+          var marker = new google.maps.Marker({
+          position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+          map: map,
+          icon: icons[iconCounter]
+          });
+
+          markers["semGr"+ (i + 1)] = marker;
+
+          google.maps.event.addListener(marker, 'click', (function(marker, i) {
+          return function() {
+            infowindow.setContent(locations[i][0]);
+            infowindow.open(map, marker);
+          }
+          })(marker, i));
+          
+          iconCounter++;
+          // We only have a limited number of possible icon colors, so we may have to restart the counter
+          if(iconCounter >= iconsLength) {
+          iconCounter = 0;
+          }
+        }
+
+      var onChangeHandler = function() {
+        calculateAndDisplayRoute(directionsService, directionsDisplay, markers);
+      };
+      document.getElementById('simulate').addEventListener('click', onChangeHandler);
+    }
+
+      function calculateAndDisplayRoute(directionsService, directionsDisplay, markers) {
+        var waypts = [];
+        var checkboxArray = document.getElementById('waypoints');
+
+        directionsService.route({
+          origin: document.getElementById('start').value,
+          destination: document.getElementById('end').value,
+          waypoints: waypts,
+          optimizeWaypoints: true,
+          travelMode: google.maps.TravelMode.DRIVING
+        }, function(response, status) {
+          if (status === google.maps.DirectionsStatus.OK) {
+            directionsDisplay.setDirections(response);
+            var route = response.routes[0];
+            var summaryPanel = document.getElementById('directions-panel');
+            summaryPanel.innerHTML = '';
+            // For each route, display summary information.
+            for (var i = 0; i < route.legs.length; i++) {
+              var routeSegment = i + 1;
+              summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment +
+                  '</b><br>';
+              summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
+              summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
+              summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
+            }
+          } else {
+            window.alert('Directions request failed due to ' + status);
+          }
+        });
+
+        getData(markers);
+      }
+
+      function getData(markers) {
+        $.ajax({
+          url: "http://192.168.2.195:3000/api/devices",
+        }).done(function (json) {console.log(json);
+          for (var lightId in json["geocoded_waypoints"]) {
+            console.log(markers[lightId]);
+          }
+        });
+      }
+    </script>
   </head>
   <body>
     {{{body}}}
+
     <script src="/javascripts/falcor/dist/falcor.browser.js"></script>
     <script src="/javascripts/bundle.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDluLpbNcXXI5rbKwHAEfy53ZjJOs0B-HU&sensor=false&callback=initMap" async defer></script>
   </body>
 </html>
