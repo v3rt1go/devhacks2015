@@ -1,6 +1,8 @@
 'use strict';
 
 var express = require('express');
+var request = require('request');
+var multer = require('multer');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
