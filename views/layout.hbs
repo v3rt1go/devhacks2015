@@ -70,7 +70,7 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay) {
     }
   });
 
-  dummyStart(document.getElementById('start').value, document.getElementById('end').value, document.getElementById('start').value);
+  dummyStart(document.getElementById('start').value, document.getElementById('end').value);
 }
 
 function clearMarkers() {
@@ -129,15 +129,17 @@ function getPanicData(map, lat, lng) {
 
 
 /* Animation */
-function getPath(obj) {
-	obj.xmlHttp.onreadystatechange=function() {
-		if (obj.xmlHttp.readyState==4) {
-			obj.jsonObject= eval('(' + obj.xmlHttp.responseText + ')');
-			obj.ready=1;
-		}
-	};
-	obj.xmlHttp.open("GET",'mock_route.json',true);
-	obj.xmlHttp.send(null);
+function getPath(obj)
+{
+obj.xmlHttp.onreadystatechange=function() {
+if(obj.xmlHttp.readyState==4)
+{
+obj.jsonObject= eval('(' + obj.xmlHttp.responseText + ')');
+obj.ready=1;
+}
+};
+obj.xmlHttp.open("GET",'mock_route.json',true);
+obj.xmlHttp.send(null);
 }
 function GetXmlHttpObject(obj)
 {
@@ -162,11 +164,9 @@ function startRender()
 {
 for(var i=0;i<=index;i++)
 {
-if (typeof GPSClientArray[i] != 'undefined') {
 if(GPSClientArray[i].ready==1)
 {
 decode(GPSClientArray[i]);
-}
 }
 }
 }
@@ -276,24 +276,23 @@ GetXmlHttpObject(obj);
 getPath(obj);
 }
 
-function addGPSClient(origin, destination, waypoints)
+function addGPSClient(origin, destination)
 {
 /*This client is dummy as mock_path.json is a hard coded path. This is because AJAX cannot reference
-the URL http://maps.googleapis.com/maps/api/directions/json?origin=srirangam&destination=trichy&sensor=false
+the URL http://maps.googleapis.com/maps/api/directions/json?origin=Strada%20Mihai%20Eminescu%20226,%20Bucure%C8%99ti,%20Romania&destination=Splaiul%20Unirii%206,%20Bucure%C8%99ti,%20Romania&sensor=false
 directly, you need a programming language like PHP, Java to proxy the result for you so that you can access
 the data in your own domain like localhost/proxy?params
 */
-GPSClientArray[index]=new GPSClient('DevHacks15','#FF0000',origin,destination,waypoints);
+GPSClientArray[index]=new GPSClient('DevHacks15','#FF0000',origin,destination);
 GPSClientInit(GPSClientArray[index]);
 index++;
 }
 
-function dummyStart(origin, destination, waypoints)
+function dummyStart(origin, destination)
 {
-addGPSClient(origin, destination, waypoints);
+addGPSClient(origin, destination);
 self.setInterval("startRender()",500);
 }
-
     </script>
   </head>
   <body>
