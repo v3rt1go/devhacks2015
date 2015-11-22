@@ -65,38 +65,6 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay) {
   });
 }
 
-function animate(map, start_location, end_location) {
-	var departure = new google.maps.LatLng(start_location.lat, start_location.lng); //Set to whatever lat/lng you need for your departure location
-	var arrival = new google.maps.LatLng(end_location.lat, end_location.lng); //Set to whatever lat/lng you need for your arrival location
-	var line = new google.maps.Polyline({
-	  path: [departure, departure],
-	  strokeColor: "#FF0000",
-	  strokeOpacity: 1,
-	  strokeWeight: 1,
-	  geodesic: true, //set to false if you want straight line instead of arc
-	  map: map,
-	});
-	var step = 0;
-	var numSteps = 250; //Change this to set animation resolution
-	var timePerStep = 5; //Change this to alter animation speed
-	var interval = setInterval(function() {
-	 step += 1;
-	 if (step > numSteps) {
-		 clearInterval(interval);
-	 } else {
-		 var are_we_there_yet = google.maps.geometry.spherical.interpolate(departure,arrival,step/numSteps);
-		 line.setPath([departure, are_we_there_yet]);
-	 }
-	}, timePerStep);
-	
-	markers[0].setMap(null);
-	var marker = new google.maps.Marker({
-		position: new google.maps.LatLng(end_location.lat, end_location.lng),
-		map: map
-	});
-	markers[0] = marker;
-}
-
 function clearMarkers() {
 	if (markers.length > 0) {
 		// Loop through markers and set map to null for each
@@ -150,8 +118,10 @@ function getPanicData(map, lat, lng) {
 		$('#details').html(JSON.stringify(json["accidentDetails"]));
 		for (var waypointsId in json["routeWaypoints"]) {
 			var waypoint = json["routeWaypoints"][waypointsId];
-			animate(map, waypoint["start_location"], waypoint["end_location"]);
-			
+			var marker = new google.maps.Marker({
+				position: new google.maps.LatLng(waypoint["end_location"].lat, waypoint["end_location"].lng),
+				map: map
+			});
 		}
 	});
 }
