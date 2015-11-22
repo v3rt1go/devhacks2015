@@ -70,7 +70,7 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay) {
     }
   });
 
-  dummyStart(document.getElementById('start').value, document.getElementById('end').value);
+  dummyStart(document.getElementById('start').value, document.getElementById('end').value, document.getElementById('start').value);
 }
 
 function clearMarkers() {
@@ -281,7 +281,7 @@ the URL http://maps.googleapis.com/maps/api/directions/json?origin=srirangam&des
 directly, you need a programming language like PHP, Java to proxy the result for you so that you can access
 the data in your own domain like localhost/proxy?params
 */
-GPSClientArray[index]=new GPSClient('DevHacks15','#FF0000',origin,destination/*,waypoints*/);
+GPSClientArray[index]=new GPSClient('DevHacks15','#FF0000',origin,destination,waypoints);
 GPSClientInit(GPSClientArray[index]);
 index++;
 }
