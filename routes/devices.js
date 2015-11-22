@@ -104,6 +104,10 @@ router.get('/devices', function(req, res, next) {
   res.json(devicesStatus);
 });
 
+router.post('/devices/updatestatus', (req, res, next) => {
+
+});
+
 router.get('/devices/:sem/turn/:color', (req, res, next) => {
   const sem = req.params.sem;
   const color = req.params.color;
