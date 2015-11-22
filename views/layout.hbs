@@ -162,9 +162,11 @@ function startRender()
 {
 for(var i=0;i<=index;i++)
 {
+if (typeof GPSClientArray[i] != 'undefined') {
 if(GPSClientArray[i].ready==1)
 {
 decode(GPSClientArray[i]);
+}
 }
 }
 }
