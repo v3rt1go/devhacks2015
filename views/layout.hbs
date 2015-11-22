@@ -69,6 +69,8 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay) {
       window.alert('Directions request failed due to ' + status);
     }
   });
+
+  dummyStart(document.getElementById('start').value, document.getElementById('end').value);
 }
 
 function clearMarkers() {
@@ -122,13 +124,6 @@ function getPanicData(map, lat, lng) {
 	  url: "http://192.168.2.195:3000/api/panic?device=123&coords=" + lat + "," + lng,
 	}).done(function (json) {
 		$('#details').html(JSON.stringify(json["accidentDetails"]));
-		for (var waypointsId in json["routeWaypoints"]) {
-			var waypoint = json["routeWaypoints"][waypointsId];
-			var marker = new google.maps.Marker({
-				position: new google.maps.LatLng(waypoint["end_location"].lat, waypoint["end_location"].lng),
-				map: map
-			});
-		}
 	});
 }
 
@@ -279,21 +274,21 @@ GetXmlHttpObject(obj);
 getPath(obj);
 }
 
-function addGPSClient()
+function addGPSClient(origin, destination, waypoints)
 {
 /*This client is dummy as mock_path.json is a hard coded path. This is because AJAX cannot reference
 the URL http://maps.googleapis.com/maps/api/directions/json?origin=srirangam&destination=trichy&sensor=false
 directly, you need a programming language like PHP, Java to proxy the result for you so that you can access
 the data in your own domain like localhost/proxy?params
 */
-GPSClientArray[index]=new GPSClient('sriram','#FF0000','srirangam','trichy');
+GPSClientArray[index]=new GPSClient('DevHacks15','#FF0000',origin,destination/*,waypoints*/);
 GPSClientInit(GPSClientArray[index]);
 index++;
 }
 
-function dummyStart()
+function dummyStart(origin, destination, waypoints)
 {
-addGPSClient();
+addGPSClient(origin, destination, waypoints);
 self.setInterval("startRender()",500);
 }
 
