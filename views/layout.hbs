@@ -76,6 +76,7 @@ function animate(map, start_location, end_location) {
 		icon: 'front.png'
 	});
 	vehicleMarker = marker;
+	setTimeout
 }
 
 function clearMarkers() {
@@ -130,9 +131,11 @@ function getPanicData(map, lat, lng) {
 	}).done(function (json) {
 		$('#details').html(JSON.stringify(json["accidentDetails"]));
 		for (var waypointsId in json["routeWaypoints"]) {
-			var waypoint = json["routeWaypoints"][waypointsId];
-			animate(map, waypoint["start_location"], waypoint["end_location"]);
-			sendPosition(map, waypoint["end_location"], waypointsId);
+			setTimeout(function(){
+				var waypoint = json["routeWaypoints"][waypointsId];
+				animate(map, waypoint["start_location"], waypoint["end_location"]);
+				sendPosition(map, waypoint["end_location"], waypointsId);
+			}, 2000);
 		}
 	});
 }
