@@ -142,8 +142,8 @@ function getPanicData(map, lat, lng) {
 	}).done(function (json) {
 		$('#details').html(JSON.stringify(json["accidentDetails"]));
 		for (var waypoints in json["routeWaypoints"]) {
-			for (var i = 0; i < waypoints.length; i++) {
-				var waypoint = waypoints[i];console.log(waypoint);
+			for (var waypoint in waypoints) {
+				console.log(waypoint);
 				animate(waypoint["start_location"], waypoint["end_location"]);
 				
 			}
