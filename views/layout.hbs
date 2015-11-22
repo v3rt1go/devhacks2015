@@ -89,7 +89,7 @@ function animate(map, start_location, end_location) {
 	 }
 	}, timePerStep);
 	
-	marker[0].setMap(null);
+	markers[0].setMap(null);
 	var marker = new google.maps.Marker({
 		position: new google.maps.LatLng(end_location.lat, end_location.lng),
 		map: map,
