@@ -29,16 +29,16 @@ function initMap() {
 	});
 	directionsDisplay.setMap(map);
 
+	getData(map);
+
 	var onChangeHandler = function() {
 		calculateAndDisplayRoute(directionsService, directionsDisplay);
-		getData(map);
+		getPanicData(map, 44.42441749824699, 26.11023328134604);
 	};
 	document.getElementById('simulate').addEventListener('click', onChangeHandler);
 }
 
 function calculateAndDisplayRoute(directionsService, directionsDisplay) {
-  var checkboxArray = document.getElementById('waypoints');
-
   directionsService.route({
     origin: document.getElementById('start').value,
     destination: document.getElementById('end').value,
@@ -63,6 +63,31 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay) {
       window.alert('Directions request failed due to ' + status);
     }
   });
+}
+
+function animate(start_location, end_location) {
+	var departure = new google.maps.LatLng(start_location.lat, start_location.lng); //Set to whatever lat/lng you need for your departure location
+	var arrival = new google.maps.LatLng(end_location.lat, end_location.lng); //Set to whatever lat/lng you need for your arrival location
+	var line = new google.maps.Polyline({
+	  path: [departure, departure],
+	  strokeColor: "#FF0000",
+	  strokeOpacity: 1,
+	  strokeWeight: 1,
+	  geodesic: false, //set to false if you want straight line instead of arc
+	  map: map,
+	});
+	var step = 0;
+	var numSteps = 250; //Change this to set animation resolution
+	var timePerStep = 5; //Change this to alter animation speed
+	var interval = setInterval(function() {
+	 step += 1;
+	 if (step > numSteps) {
+		 clearInterval(interval);
+	 } else {
+		 var are_we_there_yet = google.maps.geometry.spherical.interpolate(departure,arrival,step/numSteps);
+		 line.setPath([departure, are_we_there_yet]);
+	 }
+	}, timePerStep);
 }
 
 function clearMarkers() {
@@ -110,6 +135,22 @@ function getData(map) {
 		}, 5000);
 	});
 }
+
+function getPanicData(map, lat, lng) {
+	$.ajax({
+	  url: "http://192.168.2.195:3000/api/panic?device=123&coords=" + lat + "," + lng,
+	}).done(function (json) {
+		$('#details').html(json["accidentDetails"]);
+		for (var waypoints in json["routeWaypoints"]) {
+			for (var i = 0; i < waypoints.length; i++) {
+				var waypoint = waypoints[i];
+				animate(waypoint.start_location, waypoint.end_location);
+				
+			}
+		}
+	});
+}
+
     </script>
   </head>
   <body>
