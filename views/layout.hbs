@@ -141,9 +141,10 @@ function getPanicData(map, lat, lng) {
 	  url: "http://192.168.2.195:3000/api/panic?device=123&coords=" + lat + "," + lng,
 	}).done(function (json) {
 		$('#details').html(JSON.stringify(json["accidentDetails"]));
-		for (var waypoints in json["routeWaypoints"]) {
-			for (var waypoint in waypoints) {
-				console.log(waypoint);
+		for (var waypointsId in json["routeWaypoints"]) {
+			var waypoints = json["routeWaypoints"][waypointsId];
+			for (var i = 0; i < waypoints.length; i++) {
+				var waypoint = waypoints[i];console.log(waypoint);
 				animate(waypoint["start_location"], waypoint["end_location"]);
 				
 			}
