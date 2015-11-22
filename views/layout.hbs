@@ -32,8 +32,6 @@ function initMap() {
 		calculateAndDisplayRoute(directionsService, directionsDisplay);
 	};
 	document.getElementById('simulate').addEventListener('click', onChangeHandler);
-
-	getData(map);
 }
 
 function calculateAndDisplayRoute(directionsService, directionsDisplay) {
@@ -63,6 +61,8 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay) {
       window.alert('Directions request failed due to ' + status);
     }
   });
+
+  getData(map);
 }
 
 function clearMarkers() {
@@ -104,6 +104,9 @@ function getData(map) {
 	}).done(function (json) {
 		clearMarkers();
 		setMarkers(json, map);
+		setTimeout(function () {
+			getData(map);
+		}, 5000);
 	});
 }
     </script>
