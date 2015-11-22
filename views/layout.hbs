@@ -16,6 +16,10 @@ var iconsLength = icons.length;
 var markers = [];
 var timer;
 
+var map,geocoder;
+var GPSClientArray=new Array();
+var index=0;
+
 function initMap() {
 	var directionsService = new google.maps.DirectionsService;
 	var directionsDisplay = new google.maps.DirectionsRenderer;
@@ -36,6 +40,8 @@ function initMap() {
 		getPanicData(map, 44.42441749824699, 26.11023328134604);
 	};
 	document.getElementById('simulate').addEventListener('click', onChangeHandler);
+
+	geocoder = new google.maps.Geocoder();
 }
 
 function calculateAndDisplayRoute(directionsService, directionsDisplay) {
@@ -124,6 +130,171 @@ function getPanicData(map, lat, lng) {
 			});
 		}
 	});
+}
+
+
+/* Animation */
+function getPath(obj) {
+	obj.xmlHttp.onreadystatechange=function() {
+		if (obj.xmlHttp.readyState==4) {
+			obj.jsonObject= eval('(' + obj.xmlHttp.responseText + ')');
+			obj.ready=1;
+		}
+	};
+	obj.xmlHttp.open("GET",'mock_route.json',true);
+	obj.xmlHttp.send(null);
+}
+function GetXmlHttpObject(obj)
+{
+try
+  {
+  obj.xmlHttp=new XMLHttpRequest();
+  }
+catch (e)
+  {
+  try
+    {
+    obj.xmlHttp=new ActiveXObject("Msxml2.XMLHTTP");
+    }
+  catch (e)
+    {
+    obj.xmlHttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+  }
+}
+
+function startRender()
+{
+for(var i=0;i<=index;i++)
+{
+if(GPSClientArray[i].ready==1)
+{
+decode(GPSClientArray[i]);
+}
+}
+}
+
+function decode(obj) {
+if(obj.count==0)
+{
+var instring=obj.jsonObject.routes[0].legs[0].steps[obj.nopath].polyline.points;
+if(instring==null || instring=="")
+{
+obj.ready=0;
+}
+instring = instring.replace(/\\\\/g, "\\");  
+obj.points = decodeLine(instring);
+instring="";
+} 
+if(obj.count<obj.points.length-1)
+{
+obj.marker.setMap(null);
+var coord = [
+new google.maps.LatLng(obj.points[obj.count][0],obj.points[obj.count][1]),
+new google.maps.LatLng(obj.points[obj.count+1][0],obj.points[obj.count+1][1]),
+];
+var path = new google.maps.Polyline({
+      path: coord,
+      strokeColor: obj.color,
+      strokeOpacity: 1,
+      strokeWeight: 3
+    });
+   path.setMap(map);
+obj.marker = new google.maps.Marker({
+        position: coord[1],
+        map: map,
+        title: obj.name
+    });
+    google.maps.event.addListener(obj.marker, 'dblclick', function() {
+      alert(obj.info());
+    });
+  obj.count++;
+}
+else
+{
+obj.nopath++;
+obj.count=0;
+}
+}
+
+function decodeLine(encoded) {
+  var len = encoded.length;
+  var index = 0;
+  var array = [];
+  var lat = 0;
+  var lng = 0;
+
+  while (index < len) {
+    var b;
+    var shift = 0;
+    var result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    var dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lat += dlat;
+
+    shift = 0;
+    result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    var dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lng += dlng;
+
+    array.push([lat * 1e-5, lng * 1e-5]);
+  }
+
+  return array;
+}
+
+function GPSClient(name,color,origin,destination,waypoints)
+{
+this.name=name;
+this.color=color;
+this.origin=origin;
+this.destination=destination;
+this.waypoints=waypoints;
+this.i=0;
+this.jsonObject;
+this.xmlHttp;
+this.points;
+this.count=0;
+this.nopath=0;
+this.ready=0;
+this.marker= new google.maps.Marker();
+this.info=function()
+{
+return "Name: "+this.name+"\nOrigin: "+this.origin+"\nDestination: "+this.destination+"\nWaypoints: "+waypoints;
+}
+}
+
+function GPSClientInit(obj)
+{
+GetXmlHttpObject(obj);
+getPath(obj);
+}
+
+function addGPSClient()
+{
+/*This client is dummy as mock_path.json is a hard coded path. This is because AJAX cannot reference
+the URL http://maps.googleapis.com/maps/api/directions/json?origin=srirangam&destination=trichy&sensor=false
+directly, you need a programming language like PHP, Java to proxy the result for you so that you can access
+the data in your own domain like localhost/proxy?params
+*/
+GPSClientArray[index]=new GPSClient('sriram','#FF0000','srirangam','trichy');
+GPSClientInit(GPSClientArray[index]);
+index++;
+}
+
+function dummyStart()
+{
+addGPSClient();
+self.setInterval("startRender()",500);
 }
 
     </script>
