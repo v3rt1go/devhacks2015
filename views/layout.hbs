@@ -65,7 +65,7 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay) {
   });
 }
 
-function animate(start_location, end_location) {
+function animate(map, start_location, end_location) {
 	var departure = new google.maps.LatLng(start_location.lat, start_location.lng); //Set to whatever lat/lng you need for your departure location
 	var arrival = new google.maps.LatLng(end_location.lat, end_location.lng); //Set to whatever lat/lng you need for your arrival location
 	var line = new google.maps.Polyline({
@@ -144,8 +144,8 @@ function getPanicData(map, lat, lng) {
 		for (var waypointsId in json["routeWaypoints"]) {
 			var waypoints = json["routeWaypoints"][waypointsId];
 			for (var i = 0; i < waypoints.length; i++) {
-				var waypoint = waypoints[i];console.log(waypoint);
-				animate(waypoint["start_location"], waypoint["end_location"]);
+				var waypoint = waypoints[i];
+				animate(map, waypoint["start_location"], waypoint["end_location"]);
 				
 			}
 		}
