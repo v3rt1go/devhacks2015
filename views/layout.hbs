@@ -92,8 +92,7 @@ function animate(map, start_location, end_location) {
 	markers[0].setMap(null);
 	var marker = new google.maps.Marker({
 		position: new google.maps.LatLng(end_location.lat, end_location.lng),
-		map: map,
-		icon: icons[state]
+		map: map
 	});
 	markers[0] = marker;
 }
