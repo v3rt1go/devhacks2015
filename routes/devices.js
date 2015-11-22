@@ -2,12 +2,13 @@
 
 var express = require('express');
 var router = express.Router();
-const twilio = require('twilio')('AC0aa2d78af780cc99c5efdb2ef4d0fcb0', '4ed8f2736ae7b00102c457f8e1c565f4');
+const twilio = require('twilio')('AC37d02d3febc64307bbbfa761132506d2', '0b24875fdcc36917258fd4fec2878fc6');
 const request = require('request');
 const gMapsKey = 'AIzaSyCmD5SvAcTk3z9itXbK1sA5PMxmhUYR8Us';  
 const distance = require('google-distance');
 distance.apiKey = gMapsKey; 
 const GoogleMapsApi = require('googlemaps');
+const _ = require('lodash');
 
 const gts = () =>  {
   let rand = Math.floor(Math.random() * 2) + 1;
@@ -20,6 +21,8 @@ const newStatus = (gr, sts) => {
   }
   return sts === 'red' ? 'green' : 'red';
 };
+
+const trafficTags = ['Land Vehicle', 'Truck', 'Motor Sports', 'Cycling', 'Auto Racing', 'Auto Truck Racing', 'Race Car'];
 
 /* init devices */
 const devicesStatus = {
@@ -105,7 +108,57 @@ router.get('/devices', function(req, res, next) {
 });
 
 router.post('/devices/updatestatus', (req, res, next) => {
+ // console.log(req.body);  
+  // REFACTOR: use destructuring
+  const semData = {
+    a: {
+      state: req.body.a.state,
+      color: req.body.a.color,
+      img: req.body.a.img,
+      light: req.body.a.light,
+      lastColorChange: req.body.a.lastColorChange
+    },
+    b: {
+      state: 'default',//req.body.b.state,
+      color: 'red',//req.body.b.color,
+      lastColorChange: 123//req.body.b.lastColorChange
+    }
+  };
 
+  let vrData, claData;
+  console.log(semData);
+  vrApi(semData.a.img, (err, apiRes, data) => {
+    if (err) console.log(err);
+
+    vrData = JSON.parse(data);
+    const vrLabels = _.map(vrData.images[0].labels, 'label_name');
+    const matches = _.intersection(trafficTags, vrLabels);
+    const currTs = Date.now() / 1000 | 0;
+    
+    if (mustChange(matches, semData.a.lastColorChange, 10, 20)) {
+      semData.a.color = semData.a.color === 'red' ? 'green' : 'red';
+      semData.b.color = semData.b.color === 'green' ? 'red' : 'green';
+      
+      semData.a.lastColorChange = semData.b.lastColorChange = currTs;
+    }
+    // IDEA: Implement intermitent lights
+    
+    // update device statuses
+    devicesStatus.semGr1.a.color = semData.a.color;
+    devicesStatus.semGr1.b.color = semData.b.color;
+
+    console.log(vrLabels); 
+    res.json(semData);
+  });
+  //claApi(semData.a.img, (err, data) => {
+    //if (err) console.log(err);
+
+    //claApi = data;
+  //});
+
+  // Process state change - if necessary
+  // update device statuses
+  // send response with updated states
 });
 
 router.get('/devices/:sem/turn/:color', (req, res, next) => {
@@ -162,14 +215,19 @@ router.get('/panic', (req, res, next) => {
     gMaps.directions(params, (err, results) => {
       if (err) throw err;
 
-      twilio.sendMessage({
-        from: '+48732483434',
-        to: deviceOwner.emergencyContact.phone,
-        message: "Hi Mr. Daniel Cana, we're sorry to inform you but you need to turn the traffic lights to green, an ambulance is on the way :D"
-      }, (err, data) => {
-        if (err) {
-          console.log(err);
-        }
+      //twilio.messages.create({
+        //from: '+48732483434',
+        //to: deviceOwner.emergencyContact.phone,
+        //body: "Hi " + deviceOwner.emergencyContact.name 
+              //+ " we're sorry to inform you, but " 
+              //+ deviceOwner.name 
+              //+ " had a car accident on " 
+              //+ data.destination
+              //+ ". The emergency service has been notified and is en route."
+      //}, (err, msg) => {
+        //if (err) {
+          //console.log(err);
+        //}
 
         res.send({
           accidentDetails: {
@@ -180,7 +238,7 @@ router.get('/panic', (req, res, next) => {
           routeWaypoints: results.routes[0].legs[0].steps,
           routeDetails: data
         });
-      })
+      //})
     });
   })
 });
@@ -200,5 +258,36 @@ const controlSemaphore = (sem, color, cb) => {
       cb('something went wrong');
     }
   }); 
-}
+};
+
+
+const canChange = (lastChange, minInt) => {
+  const currTs = Date.now() / 1000 | 0;
+  return (currTs - (lastChange)) > minInt;
+};
+
+const mustChange = (matches, lastChange, minInt, maxInt) => {
+  if (matches.length > 1 && canChange(lastChange, minInt)) {
+    return true;
+  } else if (canChange(lastChange, maxInt)) {
+    return true; 
+  }
+
+  console.log('no change!!!');
+  return false;
+};
+
+const vrApi = (imgUrl, cb) => {
+  const vrEP = 'http://192.168.2.195:3003';
+  request.post({url: vrEP, form: {url: imgUrl}}, (err, res, body) => {
+    if (err) console.log(err);
+
+    cb(err, res, body);
+  })
+};
+
+const claApi = (imgUrl, cb) => {
+  const claEP = 'http://192.168.2.195:3004';
+};
+
 module.exports = router;
