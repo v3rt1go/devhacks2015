@@ -101,8 +101,7 @@ function setMarkers(json, map) {
 function getData(map) {
 	$.ajax({
 	  url: "http://192.168.2.195:3000/api/devices",
-	}).done(function (msg) {
-		var json = JSON.parse(msg);
+	}).done(function (json) {
 		clearMarkers();
 		setMarkers(json, map);
 	});
