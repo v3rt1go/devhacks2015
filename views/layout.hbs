@@ -163,7 +163,7 @@ catch (e)
 function startRender()
 {
 for(var i=0;i<=index;i++)
-{console.log(i);
+{
 if(GPSClientArray[i].ready==1)
 {
 decode(GPSClientArray[i]);
@@ -283,9 +283,8 @@ the URL http://maps.googleapis.com/maps/api/directions/json?origin=Strada%20Miha
 directly, you need a programming language like PHP, Java to proxy the result for you so that you can access
 the data in your own domain like localhost/proxy?params
 */
-GPSClientArray[index]=new GPSClient('DevHacks15','#FF0000',origin,destination);console.log(GPSClientArray[index]);console.log(index);
+GPSClientArray[index]=new GPSClient('DevHacks15','#FF0000',origin,destination);console.log(GPSClientArray[index]);
 GPSClientInit(GPSClientArray[index]);
-index++;
 }
 
 function dummyStart(origin, destination)
