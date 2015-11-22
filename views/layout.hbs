@@ -140,7 +140,7 @@ function getPanicData(map, lat, lng) {
 	$.ajax({
 	  url: "http://192.168.2.195:3000/api/panic?device=123&coords=" + lat + "," + lng,
 	}).done(function (json) {
-		$('#details').html(JSON.stringify(json["accidentDetails"]);console.log(json["accidentDetails"]));
+		$('#details').html(JSON.stringify(json["accidentDetails"]));console.log(json["routeWaypoints"]);
 		for (var waypoints in json["routeWaypoints"]) {
 			for (var i = 0; i < waypoints.length; i++) {
 				var waypoint = waypoints[i];
