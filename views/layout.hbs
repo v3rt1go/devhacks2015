@@ -73,7 +73,7 @@ function animate(map, start_location, end_location) {
 	  strokeColor: "#FF0000",
 	  strokeOpacity: 1,
 	  strokeWeight: 1,
-	  geodesic: false, //set to false if you want straight line instead of arc
+	  geodesic: true, //set to false if you want straight line instead of arc
 	  map: map,
 	});
 	var step = 0;
@@ -88,6 +88,14 @@ function animate(map, start_location, end_location) {
 		 line.setPath([departure, are_we_there_yet]);
 	 }
 	}, timePerStep);
+	
+	marker[0].setMap(null);
+	var marker = new google.maps.Marker({
+		position: new google.maps.LatLng(end_location.lat, end_location.lng),
+		map: map,
+		icon: icons[state]
+	});
+	markers[0] = marker;
 }
 
 function clearMarkers() {
@@ -142,7 +150,7 @@ function getPanicData(map, lat, lng) {
 	}).done(function (json) {
 		$('#details').html(JSON.stringify(json["accidentDetails"]));
 		for (var waypointsId in json["routeWaypoints"]) {
-			var waypoint = json["routeWaypoints"][waypointsId];console.log(waypoint);
+			var waypoint = json["routeWaypoints"][waypointsId];
 			animate(map, waypoint["start_location"], waypoint["end_location"]);
 			
 		}
